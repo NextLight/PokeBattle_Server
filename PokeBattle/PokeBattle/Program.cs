@@ -10,7 +10,12 @@ namespace PokeBattle
     {
         static void Main(string[] args)
         {
-
+            do
+            {
+                var pokeBox = new PokeBox();
+                Pokemon pk = pokeBox.GetRandomPokemonByLevel(100);
+                Console.WriteLine(pk.ToString() + '\n');
+            } while (Console.ReadKey().Key != ConsoleKey.Escape);
         }
     }
 }
