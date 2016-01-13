@@ -5,19 +5,19 @@ using System.Data;
 
 namespace PokeBattle
 {
-    class PokeBox
+    static class PokeBox
     {
-        Db db;
-        int versionGroupId = 16, languageId = 9;
-        Random rand = new Random();
-        public int NOfPokemon { get; private set; }
-        public PokeBox()
+        static Db db;
+        static int versionGroupId = 16, languageId = 9;
+        static public int NOfPokemon { get; private set; }
+
+        static PokeBox()
         {
             db = new Db("pokedex.sqlite");
-            this.NOfPokemon = db.ReadValue<int>("SELECT MAX(species_id) FROM pokemon");
+            NOfPokemon = db.ReadValue<int>("SELECT MAX(species_id) FROM pokemon");
         }
 
-        public Pokemon GetPokemonByIdAndLevel(int id, int level)
+        static public Pokemon GetPokemonByIdAndLevel(int id, int level)
         {
             string name = db.ReadValue<string>("SELECT identifier FROM pokemon WHERE id = " + id);
             var types = db.ReadColumn<int>("SELECT type_id FROM pokemon_types WHERE pokemon_id = " + id).ToArray();
@@ -34,12 +34,7 @@ namespace PokeBattle
             return new Pokemon(name, level, new Tuple<int, int?>(types[0], types.Length > 1 ? types[1] : (int?)null), baseStats.ToArray(), moves);
         }
 
-        public Pokemon GetRandomPokemon()
-        {
-            return GetRandomPokemonByLevel(rand.Next(60, 81));
-        }
-
-        public Pokemon GetRandomPokemonByLevel(int level)
+        static public Pokemon GetRandomPokemonByLevel(int level)
         {
             // Try to always select the best pokemon id in evolution chain
             // TODO: use MAX(minimum_level) from pokemon_evolution instead of MAX(evolves_from_species_id)
