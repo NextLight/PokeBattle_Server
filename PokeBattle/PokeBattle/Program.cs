@@ -10,12 +10,11 @@ namespace PokeBattle
     {
         static void Main(string[] args)
         {
-            do
-            {
-                var pokeBox = new PokeBox();
-                Pokemon pk = pokeBox.GetRandomPokemonByLevel(100);
-                Console.WriteLine(pk.ToString() + '\n');
-            } while (Console.ReadKey().Key != ConsoleKey.Escape);
+            Console.WriteLine("Waiting for 2 players.");
+            Player[] players = new Player[2] { new Player(), new Player() };
+            players[0].Connect();
+            players[0].WritePokeTeam();
+            Console.ReadKey();
         }
     }
 }
