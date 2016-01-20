@@ -51,7 +51,13 @@ namespace PokeBattle
 
         public override string ToString()
         {
-            return $"{Name} : lvl. {Level}\nHp: {Hp}\nAttack: {Attack}\nDefense: {Defense}\nSpecialAttack: {SpecialAttack}\nSpecialDefense: {SpecialDefense}\nSpeed: {Speed}";
+            return Name + " : lvl. " + Level + 
+                "\nHp: " + Hp + 
+                "\nAttack: " + Attack + 
+                "\nDefense: " + Defense + 
+                "\nSpecialAttack: " + SpecialAttack + 
+                "\nSpecialDefense: " + SpecialDefense + 
+                "\nSpeed: " + Speed;
         }
     }
 }
