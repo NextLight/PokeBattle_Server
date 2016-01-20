@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Battle.cs" />
     <Compile Include="Db.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="PokeBox.cs" />

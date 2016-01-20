@@ -5,11 +5,12 @@ namespace PokeBattle
 {
     class Pokemon
     {
+        public int Id { get; private set; }
         public string Name { get; private set; }
         public int Level { get; private set; }
         public Tuple<int, int?> Types { get; private set; }
         public Move[] Moves { get; private set; }
-        public int Hp { get; private set; }
+        public int Hp { get; set; }
         public int Attack { get; private set; }
         public int Defense { get; private set; }
         public int SpecialAttack { get; private set; }
@@ -17,8 +18,9 @@ namespace PokeBattle
         public int Speed { get; private set; }
         public int Nature { get; private set; }
 
-        public Pokemon(string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
+        public Pokemon(int id, string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
         {
+            this.Id = id;
             this.Name = name;
             this.Level = level;
             this.Types = types;
@@ -51,12 +53,12 @@ namespace PokeBattle
 
         public override string ToString()
         {
-            return Name + " : lvl. " + Level + 
-                "\nHp: " + Hp + 
-                "\nAttack: " + Attack + 
-                "\nDefense: " + Defense + 
-                "\nSpecialAttack: " + SpecialAttack + 
-                "\nSpecialDefense: " + SpecialDefense + 
+            return Name + " : lvl. " + Level +
+                "\nHp: " + Hp +
+                "\nAttack: " + Attack +
+                "\nDefense: " + Defense +
+                "\nSpecialAttack: " + SpecialAttack +
+                "\nSpecialDefense: " + SpecialDefense +
                 "\nSpeed: " + Speed;
         }
     }

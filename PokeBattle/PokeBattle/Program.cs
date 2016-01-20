@@ -13,7 +13,9 @@ namespace PokeBattle
             Console.WriteLine("Waiting for 2 players.");
             Player[] players = new Player[2] { new Player(), new Player() };
             players[0].Connect();
+            //players[1].Connect();
             players[0].WritePokeTeam();
+            //players[1].WritePokeTeam();
             Console.ReadKey();
         }
     }

@@ -31,7 +31,7 @@ namespace PokeBattle
                 .Select(dr => new Move(dr.GetValue<int>("move_id"), dr.GetValue<string>("name"), dr.GetValue<int?>("power"), dr.GetValue<int?>("accuracy"), dr.GetValue<int?>("pp"),
                     dr.GetValue<int>("type_id"), (DamageClass)dr.GetValue<int>("damage_class_id")))
                 .ToArray();
-            return new Pokemon(name, level, new Tuple<int, int?>(types[0], types.Length > 1 ? types[1] : (int?)null), baseStats.ToArray(), moves);
+            return new Pokemon(id, name, level, new Tuple<int, int?>(types[0], types.Length > 1 ? types[1] : (int?)null), baseStats.ToArray(), moves);
         }
 
         static public Pokemon GetRandomPokemonByLevel(int level)
@@ -46,6 +46,20 @@ namespace PokeBattle
             else // chain doesn't have evolutions
                 id = db.ReadValue<int>("SELECT id FROM pokemon_species WHERE evolution_chain_id = " + evChain);
             return GetPokemonByIdAndLevel(id, level);
+        }
+
+        static private int TypeEfficacy(int m1, int m2)
+        {
+            return db.ReadValue<int>("SELECT damage_factor FROM type_efficacy WHERE damage_type_id = " + m1 + " AND target_type_id = " + m2);
+        }
+
+        static public double TypeEfficacy(int moveType, Tuple<int, int?> pokemonTypes)
+        {
+            double eff1, eff2 = 1;
+            eff1 = TypeEfficacy(moveType, pokemonTypes.Item1) / 100.0;
+            if (pokemonTypes.Item2 != null)
+                eff2 = TypeEfficacy(moveType, pokemonTypes.Item2.Value) / 100.0;
+            return eff1 * eff2;
         }
     }
 }

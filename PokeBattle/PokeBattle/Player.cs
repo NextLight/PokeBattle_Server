@@ -23,7 +23,7 @@ namespace PokeBattle
         
         public void Connect()
         {
-            var server = new TcpListener(IPAddress.Any, 9073);
+            var server = new TcpListener(IPAddress.Loopback, 9073);
             server.Start();
             client = server.AcceptTcpClient();
             stream = client.GetStream();
