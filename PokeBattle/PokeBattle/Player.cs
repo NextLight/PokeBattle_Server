@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace PokeBattle
 {
@@ -11,12 +12,15 @@ namespace PokeBattle
     {
         TcpClient client;
         NetworkStream stream;
+        JavaScriptSerializer serializer;
+
         public Player()
         {
             Random rand = new Random();
             this.PokeTeam = new Pokemon[6];
             for (int i = 0; i < 6; i++)
                 this.PokeTeam[i] = PokeBox.GetRandomPokemonByLevel(rand.Next(60, 81));
+            serializer = new JavaScriptSerializer();
         }
 
         public Pokemon[] PokeTeam { get; private set; }
@@ -35,15 +39,20 @@ namespace PokeBattle
             stream.Dispose();
         }
 
-        public void WriteString(string message)
+        public void WriteLine(string message)
         {
-            stream.Write(Encoding.ASCII.GetBytes(message), 0, message.Length);
+            stream.Write(Encoding.ASCII.GetBytes(message + '\n'), 0, message.Length + 1);
+            
         }
 
         public void WritePokeTeam()
         {
-            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-            WriteString(serializer.Serialize(PokeTeam));
+            WriteLine(serializer.Serialize(PokeTeam));
+        }
+
+        public void WritePokemon(Pokemon p)
+        {
+            WriteLine(serializer.Serialize(p));
         }
     }
 }
