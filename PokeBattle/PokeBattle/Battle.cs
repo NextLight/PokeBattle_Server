@@ -40,7 +40,7 @@ namespace PokeBattle
                     if (critical)
                         damage = damage * 3 / 2;
                     damage = (int)(damage * PokeBox.TypeEfficacy(move.TypeId, pokemons[p ^ 1].Types));
-                    pokemons[p ^ 1].Hp -= damage;
+                    pokemons[p ^ 1].InBattle.Hp -= damage;
 
                 }
             }

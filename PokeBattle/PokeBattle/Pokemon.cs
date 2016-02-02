@@ -10,13 +10,19 @@ namespace PokeBattle
         public int Level { get; private set; }
         public Tuple<int, int?> Types { get; private set; }
         public Move[] Moves { get; private set; }
-        public int Hp { get; set; }
+        public int Hp { get; private set; }
         public int Attack { get; private set; }
         public int Defense { get; private set; }
         public int SpecialAttack { get; private set; }
         public int SpecialDefense { get; private set; }
         public int Speed { get; private set; }
         public int Nature { get; private set; }
+        public class InBattleClass
+        {
+            public int Hp { get; set; }
+            // TODO: status modifiers
+        }
+        public InBattleClass InBattle = new InBattleClass();
 
         public Pokemon(int id, string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
         {
