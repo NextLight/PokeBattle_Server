@@ -16,6 +16,8 @@ namespace PokeBattle
             //players[1].Connect();
             players[0].WritePokeTeam();
             //players[1].WritePokeTeam();
+            players[0].WritePokemon(players[1].PokeTeam[0]);
+            //players[1].WritePokemon(players[0].PokeTeam[0]);
             Console.ReadKey();
         }
     }
