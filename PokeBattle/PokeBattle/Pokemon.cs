@@ -37,7 +37,7 @@ namespace PokeBattle
             int[] Efforts = new int[6];
             for (int i = 0; i < Efforts.Length; i++)
                 Efforts[i] = rand.Next((127 - Efforts.Count()) % 65);
-            this.Hp             =      HpStatCalc(baseStats[0], rand.Next(32), Efforts[0]);
+            this.Hp = InBattle.Hp =    HpStatCalc(baseStats[0], rand.Next(32), Efforts[0]);
             this.Attack         = GenericStatCalc(baseStats[1], rand.Next(32), Efforts[1]);
             this.Defense        = GenericStatCalc(baseStats[2], rand.Next(32), Efforts[2]);
             this.SpecialAttack  = GenericStatCalc(baseStats[3], rand.Next(32), Efforts[3]);
