@@ -10,18 +10,19 @@ namespace PokeBattle
     {
         Pokemon[] pokemons;
         Random rand;
+        // TODO: use in-battle stats
         public Battle(Pokemon p1, Pokemon p2)
         {
             this.pokemons = new Pokemon[] { p1, p2 };
             rand = new Random();
         }
 
-        public void ExecuteMoves(int m1, int m2)
+        public void ExecuteMoves(int? m1, int? m2)
         {
-            if (pokemons[0].Speed > pokemons[1].Speed)
-                ExecuteMove(0, m1);
+            if (m2 == null || m1 != null && pokemons[0].Speed > pokemons[1].Speed)
+                ExecuteMove(0, m1.Value);
             else
-                ExecuteMove(1, m2);
+                ExecuteMove(1, m2.Value);
         }
 
         private void ExecuteMove(int p, int m)
