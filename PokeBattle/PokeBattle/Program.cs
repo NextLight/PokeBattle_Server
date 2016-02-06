@@ -16,9 +16,9 @@ namespace PokeBattle
             //players[1].Connect();
             players[0].WritePokeTeam();
             //players[1].WritePokeTeam();
-            players[0].WritePokemon(players[1].PokeTeam[0]);
-            //players[1].WritePokemon(players[0].PokeTeam[0]);
-            Battle battle = new Battle(players[0].PokeTeam[0], players[1].PokeTeam[0]);
+            players[0].WritePokemon(players[1].SelectedPokemon);
+            //players[1].WritePokemon(players[0].SelectedPokemon);
+            Battle battle = new Battle(players[0].SelectedPokemon, players[1].SelectedPokemon);
             byte[][] m = new byte[2][];
             m[0] = players[0].ReadMove();
             //m[1] = players[1].ReadMove();
