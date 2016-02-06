@@ -24,7 +24,10 @@ namespace PokeBattle
             //m[1] = players[1].ReadMove();
             m[1] = new byte[] { 0, 1 }; // tmp debug
             battle.ExecuteMoves(m[0][0] == 0 ? (int?)m[0][1] : null, m[1][0] == 0 ? (int?)m[1][1] : null);
-
+            players[0].WriteInBattleStatus();
+            //players[1].WriteInBattleStatus();
+            players[0].WriteInBattleStatus(players[1].SelectedPokemon.InBattle);
+            //players[1].WriteInBattleStatus(players[0].SelectedPokemon.InBattle);
             Console.ReadKey();
         }
     }

@@ -69,6 +69,16 @@ namespace PokeBattle
             WriteLine(serializer.Serialize(p));
         }
 
+        public void WriteInBattleStatus()
+        {
+            WriteInBattleStatus(SelectedPokemon.InBattle);
+        }
+
+        public void WriteInBattleStatus(InBattleClass inBattle)
+        {
+            WriteLine(serializer.Serialize(inBattle));
+        }
+
         public byte[] ReadMove()
         {
             byte[] buff = new byte[2];
