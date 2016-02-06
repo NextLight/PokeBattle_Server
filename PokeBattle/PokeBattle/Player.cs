@@ -54,5 +54,12 @@ namespace PokeBattle
         {
             WriteLine(serializer.Serialize(p));
         }
+
+        public byte[] ReadMove()
+        {
+            byte[] buff = new byte[2];
+            stream.Read(buff, 0, 2);
+            return buff;
+        }
     }
 }
