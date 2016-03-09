@@ -17,6 +17,11 @@ namespace PokeBattle
             rand = new Random();
         }
 
+        public void ChangePokemon(int idx, Pokemon p)
+        {
+            pokemons[idx] = p;
+        }
+
         public void ExecuteMoves(int? m1, int? m2)
         {
             if (pokemons[0].Speed > pokemons[1].Speed)
@@ -48,7 +53,7 @@ namespace PokeBattle
                     if (critical)
                         damage = damage * 3 / 2;
                     damage = (int)(damage * PokeBox.TypeEfficacy(move.TypeId, pokemons[p ^ 1].Types));
-                    pokemons[p ^ 1].InBattle.Hp -= damage;
+                    pokemons[p ^ 1].InBattle.Hp -= damage; // eh xor, beware // TODO: change to something saner
                 }
             }
         }
