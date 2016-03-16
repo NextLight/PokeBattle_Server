@@ -10,7 +10,7 @@ namespace PokeBattle
     {
         Pokemon[] pokemons;
         Random rand;
-        // TODO: use in-battle stats
+        
         public Battle(Pokemon p1, Pokemon p2)
         {
             this.pokemons = new Pokemon[] { p1, p2 };
@@ -29,7 +29,8 @@ namespace PokeBattle
                 ExecuteMove(0, m1);
                 ExecuteMove(1, m2);
             }
-            else {
+            else
+            {
                 ExecuteMove(1, m2);
                 ExecuteMove(0, m1);
             }

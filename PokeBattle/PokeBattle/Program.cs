@@ -52,6 +52,11 @@ namespace PokeBattle
                 players[1].WriteInBattleStatus(players[0].SelectedPokemon.InBattle);
 #endif
             }
+            players[0].Close();
+#if !DEBUG
+            player[1].Close();
+#endif
+            Console.WriteLine("Game over. Player " + (players[0].PokeTeam.Any(p => p.InBattle.Hp > 0) ? 1 : 2) + " won.");
             Console.ReadKey();
         }
     }
