@@ -10,23 +10,37 @@ namespace PokeBattle
     {
         Pokemon[] pokemons;
         Random rand;
+        
         public Battle(Pokemon p1, Pokemon p2)
         {
             this.pokemons = new Pokemon[] { p1, p2 };
             rand = new Random();
         }
 
-        public void ExecuteMoves(int m1, int m2)
+        public void ChangePokemon(int idx, Pokemon p)
         {
-            if (pokemons[0].Speed > pokemons[1].Speed)
-                ExecuteMove(0, m1);
-            else
-                ExecuteMove(1, m2);
+            pokemons[idx] = p;
         }
 
-        private void ExecuteMove(int p, int m)
+        public void ExecuteMoves(int? m1, int? m2)
         {
-            Move move = pokemons[p].Moves[m];
+            if (pokemons[0].Speed > pokemons[1].Speed)
+            {
+                ExecuteMove(0, m1);
+                ExecuteMove(1, m2);
+            }
+            else
+            {
+                ExecuteMove(1, m2);
+                ExecuteMove(0, m1);
+            }
+        }
+
+        private void ExecuteMove(int p, int? m)
+        {
+            if (m == null) // not sure that's the right way tho
+                return;
+            Move move = pokemons[p].Moves[m.Value];
             if ((move.Accuracy ?? 100) >= rand.Next(101))
             {
                 if (move.DamageClass != DamageClass.None && move.Power != null) 
@@ -40,8 +54,7 @@ namespace PokeBattle
                     if (critical)
                         damage = damage * 3 / 2;
                     damage = (int)(damage * PokeBox.TypeEfficacy(move.TypeId, pokemons[p ^ 1].Types));
-                    pokemons[p ^ 1].InBattle.Hp -= damage;
-
+                    pokemons[p ^ 1].InBattle.Hp -= damage; // eh xor, beware // TODO: change to something saner
                 }
             }
         }

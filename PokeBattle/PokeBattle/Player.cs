@@ -13,6 +13,7 @@ namespace PokeBattle
         TcpClient client;
         NetworkStream stream;
         JavaScriptSerializer serializer;
+        int selectedPokemonIdx = 0;
 
         public Player()
         {
@@ -24,7 +25,21 @@ namespace PokeBattle
         }
 
         public Pokemon[] PokeTeam { get; private set; }
-        
+
+        public int SelectedPokemonIdx
+        {
+            get { return selectedPokemonIdx; }
+            set
+            {
+                if (value >= 0 && value <= 6)
+                    selectedPokemonIdx = value;
+                else
+                    throw new IndexOutOfRangeException();
+            }
+        }
+
+        public Pokemon SelectedPokemon { get { return PokeTeam[selectedPokemonIdx]; } }
+
         public void Connect()
         {
             var server = new TcpListener(IPAddress.Loopback, 9073);
@@ -42,7 +57,6 @@ namespace PokeBattle
         public void WriteLine(string message)
         {
             stream.Write(Encoding.ASCII.GetBytes(message + '\n'), 0, message.Length + 1);
-            
         }
 
         public void WritePokeTeam()
@@ -53,6 +67,23 @@ namespace PokeBattle
         public void WritePokemon(Pokemon p)
         {
             WriteLine(serializer.Serialize(p));
+        }
+
+        public void WriteInBattleStatus()
+        {
+            WriteInBattleStatus(SelectedPokemon.InBattle);
+        }
+
+        public void WriteInBattleStatus(InBattleClass inBattle)
+        {
+            WriteLine(serializer.Serialize(inBattle));
+        }
+
+        public byte[] ReadMove()
+        {
+            byte[] buff = new byte[2];
+            stream.Read(buff, 0, 2);
+            return buff;
         }
     }
 }

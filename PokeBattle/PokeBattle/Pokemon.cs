@@ -17,11 +17,6 @@ namespace PokeBattle
         public int SpecialDefense { get; private set; }
         public int Speed { get; private set; }
         public int Nature { get; private set; }
-        public class InBattleClass
-        {
-            public int Hp { get; set; }
-            // TODO: status modifiers
-        }
         public InBattleClass InBattle = new InBattleClass();
 
         public Pokemon(int id, string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
@@ -67,5 +62,11 @@ namespace PokeBattle
                 "\nSpecialDefense: " + SpecialDefense +
                 "\nSpeed: " + Speed;
         }
+    }
+
+    public class InBattleClass
+    {
+        public int Hp { get; set; }
+        // TODO: status modifiers
     }
 }
