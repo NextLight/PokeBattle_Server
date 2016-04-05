@@ -25,7 +25,7 @@ namespace PokeBattle
             players[1].WritePokemon(players[0].SelectedPokemon);
 #endif
             Battle battle = new Battle(players[0].SelectedPokemon, players[1].SelectedPokemon);
-            while (players.All(pl => pl.PokeTeam.Any(p => p.InBattle.Hp > 0)))
+            while (players.All(pl => pl.PokeTeam.Any(p => p.InBattle.Stats.Hp > 0)))
             {
                 byte[][] m = new byte[2][];
                 m[0] = players[0].ReadMove();
@@ -56,7 +56,7 @@ namespace PokeBattle
 #if !DEBUG
             player[1].Close();
 #endif
-            Console.WriteLine("Game over. Player " + (players[0].PokeTeam.Any(p => p.InBattle.Hp > 0) ? 1 : 2) + " won.");
+            Console.WriteLine("Game over. Player " + (players[0].PokeTeam.Any(p => p.InBattle.Stats.Hp > 0) ? 1 : 2) + " won.");
             Console.ReadKey();
         }
     }
