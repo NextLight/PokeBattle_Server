@@ -22,27 +22,28 @@ namespace PokeBattle
             pokemons[idx] = p;
         }
 
-        public void ExecuteMoves(int? m1, int? m2)
+        List<Tuple<int, int>> _storedMoves = new List<Tuple<int, int>>();
+
+        public void StoreMove(int p, int m)
         {
-            if (pokemons[0].InBattle.Stats.Speed > pokemons[1].InBattle.Stats.Speed)
-            {
-                ExecuteMove(0, m1);
-                ExecuteMove(1, m2);
-            }
-            else
-            {
-                ExecuteMove(1, m2);
-                ExecuteMove(0, m1);
-            }
+            _storedMoves.Add(new Tuple<int, int>(p, m));
         }
 
-        private void ExecuteMove(int p, int? m)
+        public IEnumerable<Tuple<int, int>> ExecuteMoves()
         {
-            if (m == null) // not sure that's the right way tho
-                return;
+            foreach (var t in _storedMoves.OrderByDescending(x => pokemons[x.Item1].InBattle.Stats.Speed))
+            {
+                ExecuteMove(t.Item1, t.Item2);
+                yield return t;
+            }
+            _storedMoves.Clear();
+        }
+
+        private void ExecuteMove(int p, int m)
+        {
             Pokemon user = pokemons[p], opponent = pokemons[p ^ 1]; // eh xor, beware // TODO: change to something saner
             InBattleClass uBattle = user.InBattle, oBattle = opponent.InBattle;
-            Move move = user.Moves[m.Value];
+            Move move = user.Moves[m];
             int hits = rand.Next(move.MinHits ?? 1, move.MaxHits ?? 1 + 1);
             for (int i = 0; i < hits; i++)
             {
@@ -91,8 +92,7 @@ namespace PokeBattle
                     }
                     uBattle.Stats.Hp += move.HpChanges;
                 }
-            }
-            
+            }            
         }
 
         private int CalculateDamage(int level, int power, int offensive, int defensive)

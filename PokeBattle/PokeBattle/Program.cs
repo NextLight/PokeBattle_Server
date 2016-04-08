@@ -20,13 +20,19 @@ namespace PokeBattle
 #if !DEBUG
             players[1].WritePokeTeam();
 #endif
-            players[0].WritePokemon(players[1].SelectedPokemon);
+            players[0].WriteOpponent(players[1].SelectedPokemon);
 #if !DEBUG
-            players[1].WritePokemon(players[0].SelectedPokemon);
+            players[1].WriteOpponent(players[0].SelectedPokemon);
 #endif
             Battle battle = new Battle(players[0].SelectedPokemon, players[1].SelectedPokemon);
+
             while (players.All(pl => pl.PokeTeam.Any(p => p.InBattle.Stats.Hp > 0)))
             {
+                players[0].WriteBeginTurn();
+#if !DEBUG
+                players[1].WriteBeginTurn();
+#endif
+
                 byte[][] m = new byte[2][];
                 m[0] = players[0].ReadMove();
 #if !DEBUG
@@ -34,24 +40,31 @@ namespace PokeBattle
 #else
                 m[1] = new byte[] { 0, 1 };
 #endif
-                // check for active pokemon changes
                 for (int i = 0; i < m.Length; i++)
+                {
                     if (m[i][0] == 1)
                     {
                         players[i].SelectedPokemonIdx = m[i][1];
                         battle.ChangePokemon(i, players[i].SelectedPokemon);
                     }
+                    else
+                    {
+                        battle.StoreMove(i, m[i][1]);
+                    }
+                }
+                foreach (var t in battle.ExecuteMoves())
+                    players[t.Item1].WriteText(players[t.Item1].SelectedPokemon.Name + " used " + players[t.Item1].SelectedPokemon.Moves[t.Item2].Name);
 
-                battle.ExecuteMoves(m[0][0] == 0 ? (int?)m[0][1] : null, m[1][0] == 0 ? (int?)m[1][1] : null);
-                players[0].WriteInBattleStatus();
+                players[0].WriteInBattle();
 #if !DEBUG
-                players[1].WriteInBattleStatus();
+                players[1].WriteInBattle();
 #endif
-                players[0].WriteInBattleStatus(players[1].SelectedPokemon.InBattle);
+                players[0].WriteInBattleOpponent(players[1].SelectedPokemon.InBattle);
 #if !DEBUG
-                players[1].WriteInBattleStatus(players[0].SelectedPokemon.InBattle);
+                players[1].WriteInBattleOpponent(players[0].SelectedPokemon.InBattle);
 #endif
             }
+
             players[0].Close();
 #if !DEBUG
             player[1].Close();

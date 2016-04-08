@@ -54,29 +54,45 @@ namespace PokeBattle
             stream.Dispose();
         }
 
-        public void WriteLine(string message)
+        private void WriteLine(string message, MessageType type)
         {
-            stream.Write(Encoding.ASCII.GetBytes(message + '\n'), 0, message.Length + 1);
+            if (stream != null) // temp for DEBUG
+                stream.Write(Encoding.ASCII.GetBytes((char)type + message + '\n'), 0, message.Length + 2);
+        }
+
+        private void WriteMessageTypeOnly(MessageType type)
+        {
+            stream.WriteByte((byte)type);
+        }
+
+        public void WriteBeginTurn()
+        {
+            WriteMessageTypeOnly(MessageType.BeginTurn);
+        }
+
+        public void WriteText(string text)
+        {
+            WriteLine(text, MessageType.Text);
         }
 
         public void WritePokeTeam()
         {
-            WriteLine(serializer.Serialize(PokeTeam));
+            WriteLine(serializer.Serialize(PokeTeam), MessageType.PokeTeam);
         }
 
-        public void WritePokemon(Pokemon p)
+        public void WriteOpponent(Pokemon p)
         {
-            WriteLine(serializer.Serialize(p));
+            WriteLine(serializer.Serialize(p), MessageType.ChangeOpponent);
         }
 
-        public void WriteInBattleStatus()
+        public void WriteInBattle()
         {
-            WriteInBattleStatus(SelectedPokemon.InBattle);
+            WriteLine(serializer.Serialize(SelectedPokemon.InBattle), MessageType.InBattleOpponent);
         }
 
-        public void WriteInBattleStatus(InBattleClass inBattle)
+        public void WriteInBattleOpponent(InBattleClass inBattle)
         {
-            WriteLine(serializer.Serialize(inBattle));
+            WriteLine(serializer.Serialize(inBattle), MessageType.InBattleOpponent);
         }
 
         public byte[] ReadMove()
@@ -86,4 +102,6 @@ namespace PokeBattle
             return buff;
         }
     }
+
+    enum MessageType : byte { Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted }
 }
