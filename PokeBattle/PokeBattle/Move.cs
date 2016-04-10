@@ -1,8 +1,6 @@
-﻿using System.Web.Script.Serialization;
-
-namespace PokeBattle
+﻿namespace PokeBattle
 {
-    enum DamageClass { None = 1, Physical, Special };
+    enum DamageClass { None = 1, Physical, Special }
     enum Statuses { Unknown, None, Paralysis, Sleep, Freeze, Burn, Poison, Confusion, Infatuation, Trap, Nightmare, Torment, Disable, Yawn, HealBlock, NoTypeImmunity, LeechSeed, Embargo, PerishSong, Ingrain }
     enum StatsTarget { None, User, Opponent, Both }
 
@@ -32,8 +30,8 @@ namespace PokeBattle
 
     class StatsChanges
     {
-        public int Chance { get; private set; }
-        public StatChange[] Changes { get; private set; }
+        public int Chance { get; }
+        public StatChange[] Changes { get; }
 
         public StatsChanges(int chance, StatChange[] stats)
         {
@@ -44,8 +42,8 @@ namespace PokeBattle
 
     class StatChange
     {
-        public int Id { get; private set; }
-        public int Change { get; private set; }
+        public int Id { get; }
+        public int Change { get; }
 
         public StatChange(int id, int change)
         {

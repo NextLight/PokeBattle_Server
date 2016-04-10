@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PokeBattle
 {
     class Battle
     {
-        Pokemon[] pokemons;
-        Random rand;
+        Pokemon[] _pokemons;
+        Random _rand;
         
         public Battle(Pokemon p1, Pokemon p2)
         {
-            this.pokemons = new Pokemon[] { p1, p2 };
-            rand = new Random();
+            _pokemons = new Pokemon[] { p1, p2 };
+            _rand = new Random();
         }
 
         public void ChangePokemon(int idx, Pokemon p)
         {
-            pokemons[idx] = p;
+            _pokemons[idx] = p;
         }
 
         List<Tuple<int, int>> _storedMoves = new List<Tuple<int, int>>();
@@ -31,7 +29,7 @@ namespace PokeBattle
 
         public IEnumerable<Tuple<int, int>> ExecuteMoves()
         {
-            foreach (var t in _storedMoves.OrderByDescending(x => pokemons[x.Item1].InBattle.Stats.Speed))
+            foreach (var t in _storedMoves.OrderByDescending(x => _pokemons[x.Item1].InBattle.Stats.Speed))
             {
                 ExecuteMove(t.Item1, t.Item2);
                 yield return t;
@@ -41,16 +39,16 @@ namespace PokeBattle
 
         private void ExecuteMove(int p, int m)
         {
-            Pokemon user = pokemons[p], opponent = pokemons[p ^ 1]; // eh xor, beware // TODO: change to something saner
+            Pokemon user = _pokemons[p], opponent = _pokemons[p ^ 1]; // eh xor, beware // TODO: change to something saner
             InBattleClass uBattle = user.InBattle, oBattle = opponent.InBattle;
             Move move = user.Moves[m];
-            int hits = rand.Next(move.MinHits ?? 1, move.MaxHits ?? 1 + 1);
+            int hits = _rand.Next(move.MinHits ?? 1, move.MaxHits ?? 1 + 1);
             for (int i = 0; i < hits; i++)
             {
                 int stage = uBattle.Stats.AccuracyStage - oBattle.Stats.EvasionStage;
                 stage = stage > 6 ? 6 : stage < -6 ? -6 : stage; // stage must be in range [-6,6]
                 float mult = Math.Max(3, 3 + stage) / (float)Math.Max(3, 3 - stage);
-                if ((move.Accuracy * mult ?? 100) >= rand.Next(101))
+                if ((move.Accuracy * mult ?? 100) >= _rand.Next(101))
                 {
                     if (move.IsOhko)
                     {
@@ -64,13 +62,13 @@ namespace PokeBattle
                         );
                         if (user.Types.Item1 == move.TypeId || user.Types.Item2 == move.TypeId) // stab
                             damage = damage * 3 / 2;
-                        if (rand.Next(16 / (1 + move.CriticalRate)) == 0) // critical
+                        if (_rand.Next(16 / (1 + move.CriticalRate)) == 0) // critical
                             damage = damage * 3 / 2;
                         damage = (int)(damage * PokeBox.TypeEfficacy(move.TypeId, user.Types));
                         oBattle.Stats.Hp -= damage;
                     }
                     // change stats
-                    if (move.StatsChanges.Chance >= rand.Next(101))
+                    if (move.StatsChanges.Chance >= _rand.Next(101))
                     {
                         var targets = new List<InBattleClass>();
                         switch (move.Target)
@@ -95,10 +93,8 @@ namespace PokeBattle
             }            
         }
 
-        private int CalculateDamage(int level, int power, int offensive, int defensive)
-        {
-            return (2 * level / 5 + 2) * offensive * power / defensive / 50 + 2;
-        }
+        private int CalculateDamage(int level, int power, int offensive, int defensive) => 
+            (2 * level / 5 + 2) * offensive * power / defensive / 50 + 2;
     }
 
 }

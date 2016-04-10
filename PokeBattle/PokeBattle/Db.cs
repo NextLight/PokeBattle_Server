@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data.SQLite;
+﻿using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 
 namespace PokeBattle
 {
     class Db
     {
-        SQLiteConnection connection;
-        public Db(string dbName)
+        SQLiteConnection _connection;
+        public Db(string name)
         {
-            connection = new SQLiteConnection("Data Source=" + dbName + ";Version=3;");
-            connection.Open();
+            _connection = new SQLiteConnection("Data Source=" + name + ";Version=3;");
+            _connection.Open();
         }
 
         public void Close()
         {
-            connection.Close();
+            _connection.Close();
         }
 
         public DataTable ReadDataTable(string sql)
         {
-            var adapter = new SQLiteDataAdapter(sql, connection);
+            var adapter = new SQLiteDataAdapter(sql, _connection);
             var dt = new DataTable();
             adapter.Fill(dt);
             return dt;
@@ -30,10 +28,9 @@ namespace PokeBattle
 
         public T ReadValue<T>(string sql)
         {
-            var command = new SQLiteCommand(sql, connection);
+            var command = new SQLiteCommand(sql, _connection);
             using (var reader = command.ExecuteReader())
             {
-                //TODO: throw exception if (!reader.HasRows) 
                 reader.Read();
                 return (T)(reader.IsDBNull(0) ? null : (dynamic)reader.GetValue(0));
             }
@@ -41,29 +38,16 @@ namespace PokeBattle
 
         public IEnumerable<T> ReadColumn<T>(string sql)
         {
-            var command = new SQLiteCommand(sql, connection);
+            var command = new SQLiteCommand(sql, _connection);
             using (var reader = command.ExecuteReader())
-            {
-                //TODO: throw exception if (reader.FieldCount == 0)
                 while (reader.Read())
                     yield return (T)(reader.IsDBNull(0) ? null : (dynamic)reader.GetValue(0));
-            }
         }
     }
 
-    static class DbUtils
+    static class DbExtensions
     {
         // this is needed because sqlite integer types are 64b and c# doesn't allow to directly unbox to a different type, so it unboxes to dynamic before
-        public static T GetValue<T>(this DataRow dr, string col)
-        {
-            return (T)(dr.IsNull(col) ? null : (dynamic)dr[col]);
-        }
-
-        public static IEnumerable<T> GetColumn<T>(this DataTable dt, int col)
-        {
-            //TODO: throw exception if (col >= dt.Columns.Count)
-            foreach (DataRow dr in dt.AsEnumerable())
-                yield return dr.Field<T>(col);
-        }
+        public static T GetValue<T>(this DataRow dr, string col) => (T)(dr.IsNull(col) ? null : (dynamic)dr[col]);
     }
 }

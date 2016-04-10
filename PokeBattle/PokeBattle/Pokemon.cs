@@ -5,12 +5,12 @@ namespace PokeBattle
 {
     class Pokemon
     {
-        public int Id { get; private set; }
-        public string Name { get; private set; }
-        public int Level { get; private set; }
-        public Tuple<int, int?> Types { get; private set; }
-        public Move[] Moves { get; private set; }
-        public int Nature { get; private set; }
+        public int Id { get; }
+        public string Name { get; }
+        public int Level { get; }
+        public Tuple<int, int?> Types { get; }
+        public Move[] Moves { get; }
+        public int Nature { get; }
         public InBattleClass InBattle;
 
         public Pokemon(int id, string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
@@ -40,26 +40,18 @@ namespace PokeBattle
             Nature = rand.Next(1, 26);
         }
 
-        int GenericStatCalc(int b, int i, int e)
-        {
-            return (2 * b + i + e) * Level / 100 + 5;
-        }
+        int GenericStatCalc(int b, int i, int e) => (2 * b + i + e) * Level / 100 + 5;
 
-        int HpStatCalc(int b, int i, int e)
-        {
-            return (2 * b + i + e) * Level / 100 + Level + 10;
-        }
+        int HpStatCalc(int b, int i, int e) => (2 * b + i + e) * Level / 100 + Level + 10;
 
-        public override string ToString()
-        {
-            return Name + " : lvl. " + Level +
-                "\nHp: " + InBattle.Stats.Hp +
-                "\nAttack: " + InBattle.Stats.Attack +
-                "\nDefense: " + InBattle.Stats.Defense +
-                "\nSpecialAttack: " + InBattle.Stats.SpecialAttack +
-                "\nSpecialDefense: " + InBattle.Stats.SpecialDefense +
-                "\nSpeed: " + InBattle.Stats.Speed;
-        }
+        public override string ToString() =>  
+            Name + " : lvl. " + Level +
+            "\nHp: " + InBattle.Stats.Hp +
+            "\nAttack: " + InBattle.Stats.Attack +
+            "\nDefense: " + InBattle.Stats.Defense +
+            "\nSpecialAttack: " + InBattle.Stats.SpecialAttack +
+            "\nSpecialDefense: " + InBattle.Stats.SpecialDefense +
+            "\nSpeed: " + InBattle.Stats.Speed;
     }
 
     public class InBattleClass
@@ -69,7 +61,7 @@ namespace PokeBattle
             Stats = stats;
         }
 
-        public StatsClass Stats { get; private set; }
+        public StatsClass Stats { get; }
         // TODO: status modifiers
     }
 
@@ -129,13 +121,13 @@ namespace PokeBattle
 
         public int Hp { get; set; }
 
-        public int MaxHp { get { return Calculate(Statistics.Hp); } }
-        public int Attack { get { return Calculate(Statistics.Attack); } }
-        public int Defense { get { return Calculate(Statistics.Defense); } }
-        public int SpecialAttack { get { return Calculate(Statistics.SpecialAttack); } }
-        public int SpecialDefense { get { return Calculate(Statistics.SpecialDefense); } }
-        public int Speed { get { return Calculate(Statistics.Speed); } }
-        public int AccuracyStage { get { return _stages[7]; } }
-        public int EvasionStage { get { return _stages[8]; } }
+        public int MaxHp => Calculate(Statistics.Hp);
+        public int Attack => Calculate(Statistics.Attack);
+        public int Defense => Calculate(Statistics.Defense);
+        public int SpecialAttack => Calculate(Statistics.SpecialAttack);
+        public int SpecialDefense => Calculate(Statistics.SpecialDefense);
+        public int Speed => Calculate(Statistics.Speed);
+        public int AccuracyStage => _stages[7];
+        public int EvasionStage => _stages[8];
     }
 }
