@@ -29,7 +29,7 @@ namespace PokeBattle
             get { return _selectedPokemonIdx; }
             set
             {
-                if (value >= 0 && value <= 6)
+                if (value >= 0 && value < 6)
                     _selectedPokemonIdx = value;
                 else
                     throw new IndexOutOfRangeException();
@@ -52,19 +52,30 @@ namespace PokeBattle
             _stream.Dispose();
         }
 
-        private void WriteLine(string message, MessageType type)
+        private void WriteBytes(byte[] array)
         {
-            if (_stream != null) // temp for DEBUG
-                _stream.Write(Encoding.ASCII.GetBytes((char)type + message + '\n'), 0, message.Length + 2);
+            _stream?.Write(array, 0, array.Length);
         }
 
-        private void WriteMessageTypeOnly(MessageType type) => _stream.WriteByte((byte)type);
+        private void WriteLine(string message, MessageType type)
+        {
+            WriteMessageType(type);
+            WriteBytes(Encoding.ASCII.GetBytes(message + '\n'));
+        }
+
+        private void WriteMessageType(MessageType type)
+        {
+            _stream?.WriteByte((byte)type);
+#if DEBUG
+            Console.WriteLine(type.ToString());
+#endif
+        }
 
         public void WriteBeginTurn() =>
-            WriteMessageTypeOnly(MessageType.BeginTurn);
+            WriteMessageType(MessageType.BeginTurn);
 
         public void WriteText(string text) =>
-            WriteLine(text, MessageType.Text);
+            WriteLine(Convert.ToBase64String(Encoding.ASCII.GetBytes(text)), MessageType.Text);
 
         public void WritePokeTeam() =>
             WriteLine(_serializer.Serialize(PokeTeam), MessageType.PokeTeam);
@@ -73,18 +84,25 @@ namespace PokeBattle
             WriteLine(_serializer.Serialize(p), MessageType.ChangeOpponent);
 
         public void WriteInBattle() =>
-            WriteLine(_serializer.Serialize(SelectedPokemon.InBattle), MessageType.InBattleOpponent);
+            WriteLine(_serializer.Serialize(SelectedPokemon.InBattle), MessageType.InBattleUser);
 
         public void WriteInBattleOpponent(InBattleClass inBattle) =>
             WriteLine(_serializer.Serialize(inBattle), MessageType.InBattleOpponent);
 
+        public void WriteUserFainted() =>
+            WriteMessageType(MessageType.UserFainted);
+
+        public void WriteOpponentFainted() =>
+            WriteMessageType(MessageType.OpponentFainted);
+
+        // Each turn the player can either use a move (0), change (1) or don't change (2, when fainted only) the active pokemon
         public byte[] ReadMove()
         {
             byte[] buff = new byte[2];
-            _stream.Read(buff, 0, 2);
+            _stream?.Read(buff, 0, 2);
             return buff;
         }
     }
 
-    enum MessageType : byte { Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted }
+    enum MessageType : byte { Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted, OpponentFainted }
 }

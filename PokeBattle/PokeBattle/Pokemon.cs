@@ -12,6 +12,7 @@ namespace PokeBattle
         public Move[] Moves { get; }
         public int Nature { get; }
         public InBattleClass InBattle;
+        public bool Fainted => InBattle.Stats.Hp <= 0;
 
         public Pokemon(int id, string name, int level, Tuple<int, int?> types, int[] baseStats, Move[] moves)
         {
