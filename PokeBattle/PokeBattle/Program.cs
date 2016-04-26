@@ -23,7 +23,8 @@ namespace PokeBattle
 #endif
             Battle battle = new Battle(players[0].SelectedPokemon, players[1].SelectedPokemon);
 
-            while (players.All(pl => pl.PokeTeam.Any(p => !p.Fainted)))
+            bool exit = false;
+            while (!exit)
             {
                 players[0].WriteBeginTurn();
 #if !DEBUG
@@ -62,50 +63,54 @@ namespace PokeBattle
 #if !DEBUG
                 players[1].WriteInBattleOpponent(players[0].SelectedPokemon.InBattle);
 #endif
-                foreach (Player p in players)
-                    if (p.SelectedPokemon.Fainted)
-                    {
-                        p.WriteUserFainted();
-                        byte[] mu;
-#if DEBUG
-                        if (p == players[0])
-#endif
-                            mu = p.ReadMove();
-#if DEBUG
-                        else
-                            mu = new byte[] { 1, (byte)((p.SelectedPokemonIdx + 1) % 6)};
-#endif
-                        if (mu[0] == 1)
+                exit = players.Any(p => p.Lost);
+                if (!exit)
+                {
+                    foreach (Player p in players)
+                        if (p.SelectedPokemon.Fainted)
                         {
-                            p.SelectedPokemonIdx = mu[1];
-                            foreach (Player pl in players.Where(pl => pl != p))
-                            {
+                            p.WriteUserFainted();
+                            byte[] mu;
 #if DEBUG
-                                if (pl == players[0])
+                            if (p == players[0])
 #endif
+                                mu = p.ReadMove();
+#if DEBUG
+                            else
+                                mu = new byte[] { 1, (byte)((p.SelectedPokemonIdx + 1) % 6) };
+#endif
+                            if (mu[0] == 1)
+                            {
+                                p.SelectedPokemonIdx = mu[1];
+                                foreach (Player pl in players.Where(pl => pl != p))
                                 {
-                                    pl.WriteOpponentFainted();
-                                    pl.WriteOpponent(p.SelectedPokemon);
-                                    byte[] mp = pl.ReadMove();
-                                    if (mp[0] == 1)
-                                        pl.SelectedPokemonIdx = mp[1];
-                                    else if (mp[0] != 2)
-                                        throw new Exception();
+#if DEBUG
+                                    if (pl == players[0])
+#endif
+                                    {
+                                        pl.WriteOpponentFainted();
+                                        pl.WriteOpponent(p.SelectedPokemon);
+                                        byte[] mp = pl.ReadMove();
+                                        if (mp[0] == 1)
+                                            pl.SelectedPokemonIdx = mp[1];
+                                        else if (mp[0] != 2)
+                                            throw new Exception();
+                                    }
                                 }
                             }
+                            else
+                                throw new Exception();
                         }
-                        else
-                            throw new Exception();
-                    }
-                for (int i = 0; i < players.Length; i++)
-                    battle.ChangePokemon(i, players[i].SelectedPokemon);
+                    for (int i = 0; i < players.Length; i++)
+                        battle.ChangePokemon(i, players[i].SelectedPokemon);
+                }
             }
 
             players[0].Close();
 #if !DEBUG
             player[1].Close();
 #endif
-            Console.WriteLine("Game over. Player " + (players[0].PokeTeam.Any(p => !p.Fainted) ? 1 : 2) + " won.");
+            Console.WriteLine("Game over. Player " + (players[0].Lost ? 2 : 1) + " won.");
             Console.ReadKey();
         }
     }

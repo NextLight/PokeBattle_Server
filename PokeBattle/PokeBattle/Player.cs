@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -22,6 +23,8 @@ namespace PokeBattle
         }
 
         public Pokemon[] PokeTeam { get; }
+
+        public bool Lost => PokeTeam.All(p => p.Fainted);
 
         int _selectedPokemonIdx = 0;
         public int SelectedPokemonIdx

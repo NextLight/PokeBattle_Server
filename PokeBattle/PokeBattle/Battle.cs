@@ -40,6 +40,8 @@ namespace PokeBattle
         private void ExecuteMove(int p, int m)
         {
             Pokemon user = _pokemons[p], opponent = _pokemons[p ^ 1]; // eh xor, beware // TODO: change to something saner
+            if (user.Fainted)
+                return;
             InBattleClass uBattle = user.InBattle, oBattle = opponent.InBattle;
             Move move = user.Moves[m];
             int hits = _rand.Next(move.MinHits ?? 1, move.MaxHits ?? 1 + 1);
