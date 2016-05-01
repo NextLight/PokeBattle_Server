@@ -6,20 +6,15 @@ namespace PokeBattle
 {
     class Battle
     {
-        Pokemon[] _pokemons;
+        Player[] _players;
         Random _rand;
         
-        public Battle(Pokemon p1, Pokemon p2)
+        public Battle(Player p1, Player p2)
         {
-            _pokemons = new Pokemon[] { p1, p2 };
+            _players = new Player[] { p1, p2 };
             _rand = new Random();
         }
-
-        public void ChangePokemon(int idx, Pokemon p)
-        {
-            _pokemons[idx] = p;
-        }
-
+        
         List<Tuple<int, int>> _storedMoves = new List<Tuple<int, int>>();
 
         public void StoreMove(int p, int m)
@@ -29,7 +24,7 @@ namespace PokeBattle
 
         public IEnumerable<Tuple<int, int>> ExecuteMoves()
         {
-            foreach (var t in _storedMoves.OrderByDescending(x => _pokemons[x.Item1].InBattle.Stats.Speed))
+            foreach (var t in _storedMoves.OrderByDescending(x => _players[x.Item1].SelectedPokemon.InBattle.Stats.Speed))
             {
                 ExecuteMove(t.Item1, t.Item2);
                 yield return t;
@@ -39,7 +34,7 @@ namespace PokeBattle
 
         private void ExecuteMove(int p, int m)
         {
-            Pokemon user = _pokemons[p], opponent = _pokemons[p ^ 1]; // eh xor, beware // TODO: change to something saner
+            Pokemon user = _players[p].SelectedPokemon, opponent = _players[p ^ 1].SelectedPokemon; // eh xor, beware // TODO: change to something saner
             if (user.Fainted)
                 return;
             InBattleClass uBattle = user.InBattle, oBattle = opponent.InBattle;
