@@ -47,6 +47,7 @@ namespace PokeBattle
             server.Start();
             _client = server.AcceptTcpClient();
             _stream = _client.GetStream();
+            server.Stop();
         }
 
         public void Close()
