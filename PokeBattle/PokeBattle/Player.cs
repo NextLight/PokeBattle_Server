@@ -75,38 +75,58 @@ namespace PokeBattle
 #endif
         }
 
-        public void WriteBeginTurn() =>
+        public void SendBeginTurn() =>
             WriteMessageType(MessageType.BeginTurn);
 
-        public void WriteText(string text) =>
+        public void SendText(string text) =>
             WriteLine(Convert.ToBase64String(Encoding.ASCII.GetBytes(text)), MessageType.Text);
 
-        public void WritePokeTeam() =>
+        public void SendPokeTeam() =>
             WriteLine(_serializer.Serialize(PokeTeam), MessageType.PokeTeam);
 
-        public void WriteOpponent(Pokemon p) =>
+        public void SendOpponent(Pokemon p) =>
             WriteLine(_serializer.Serialize(p), MessageType.ChangeOpponent);
 
-        public void WriteInBattle() =>
+        public void SendInBattle() =>
             WriteLine(_serializer.Serialize(SelectedPokemon.InBattle), MessageType.InBattleUser);
 
-        public void WriteInBattleOpponent(InBattleClass inBattle) =>
+        public void SendInBattleOpponent(InBattleClass inBattle) =>
             WriteLine(_serializer.Serialize(inBattle), MessageType.InBattleOpponent);
 
-        public void WriteUserFainted() =>
+        public void SendUserFainted() =>
             WriteMessageType(MessageType.UserFainted);
 
-        public void WriteOpponentFainted() =>
+        public void SendOpponentFainted() =>
             WriteMessageType(MessageType.OpponentFainted);
 
-        // Each turn the player can either use a move (0), change (1) or don't change (2, when fainted only) the active pokemon
-        public byte[] ReadMove()
+        // Each turn the player can either use a move (0), change (1) or don't change (2 - only when opponent's fainted) the active pokemon
+        private ReadReturn ReadGeneric() => 
+            new ReadReturn { Type = (ReadType)_stream.ReadByte(), Value = (byte)_stream.ReadByte() };
+
+        public ReadReturn Read()
         {
-            byte[] buff = new byte[2];
-            _stream?.Read(buff, 0, 2);
-            return buff;
+            var r = ReadGeneric();
+            if (r.Type == ReadType.NoSwitch)
+                throw new Exception();
+            return r;
+        }
+
+        public ReadReturn ReadSwitch()
+        {
+            var r = Read();
+            if (r.Type == ReadType.Move)
+                throw new Exception();
+            return r;
         }
     }
 
     enum MessageType : byte { Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted, OpponentFainted }
+
+    enum ReadType : byte { Move, Switch, NoSwitch }
+
+    struct ReadReturn
+    {
+        public ReadType Type { get; set; }
+        public byte Value { get; set; }
+    }
 }
