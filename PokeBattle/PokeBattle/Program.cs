@@ -108,7 +108,7 @@ namespace PokeBattle
 
             players[0].Close();
 #if !DEBUG
-            player[1].Close();
+            players[1].Close();
 #endif
             Console.WriteLine("Game over. Player " + (players[0].Lost ? 2 : 1) + " won.");
             Console.ReadKey();
