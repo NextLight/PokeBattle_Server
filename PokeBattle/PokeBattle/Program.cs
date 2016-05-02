@@ -101,7 +101,7 @@ namespace PokeBattle
                 r.Key.SelectedPokemonIdx = r.Value;
         }
 
-        public IEnumerable<ReadReturn> Read() => Execute().Cast<ReadReturn>();
+        public IEnumerable<ReadReturn> Read() => _p.Select(p => p.Read());
 
         public IEnumerable<KeyValuePair<Player, byte>> ReadSwitch(Player f)
         {
@@ -114,11 +114,11 @@ namespace PokeBattle
         }
 
 
-        private IEnumerable<object> Execute(object[] args = null, Player f = null, [CallerMemberName]string name = "")
+        private void Execute(object[] args = null, Player f = null, [CallerMemberName]string name = "")
         {
             MethodInfo method = typeof(Player).GetMethod(name);
             foreach (Player p in Filter(f))
-                yield return method.Invoke(p, args);
+                method.Invoke(p, args);
         }
 
 
