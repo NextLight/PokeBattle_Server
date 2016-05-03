@@ -8,7 +8,7 @@ namespace PokeBattle
     static class PokeBox
     {
         static Db _db;
-        static int _versionGroupId = 16, _languageId = 9, _generation = 5;
+        static int _versionGroupId = 16, _languageId = 8, _generation = 5;
         static public int NumberOfPokemon { get; }
 
         static PokeBox()
@@ -19,25 +19,27 @@ namespace PokeBattle
 
         static public Pokemon GetPokemonByIdAndLevel(int id, int level)
         {
-            string name = _db.ReadValue<string>("SELECT identifier FROM pokemon WHERE id = " + id);
-            var types = _db.ReadColumn<int>("SELECT type_id FROM pokemon_types WHERE pokemon_id = " + id).ToArray();
-            var baseStats = _db.ReadColumn<int>("SELECT base_stat FROM pokemon_stats WHERE pokemon_id = " + id + " ORDER BY stat_id").ToArray();
-            string sqlMoves =
-                $@"SELECT pk_mv.move_id, name, power, accuracy, pp, type_id, damage_class_id, target_id,
+            string name = _db.ReadValue<string>($"SELECT name FROM pokemon_species_names WHERE pokemon_species_id = {id} and local_language_id = {_languageId}");
+            var types = _db.ReadColumn<int>($"SELECT type_id FROM pokemon_types WHERE pokemon_id = {id}").ToArray();
+            var baseStats = _db.ReadColumn<int>($"SELECT base_stat FROM pokemon_stats WHERE pokemon_id = {id} ORDER BY stat_id").ToArray();
+            string sqlMoves = $@"
+                SELECT pk_mv.move_id, COALESCE(mv_n.name, mv_n_en.name) name, power, accuracy, pp, type_id, damage_class_id, target_id,
                     meta_category_id, meta_ailment_id, min_hits, max_hits, min_turns, max_turns, (drain + healing) hp_changes,
-                    crit_rate, ailment_chance, flinch_chance, stat_chance, effect_chance, short_effect
+                    crit_rate, ailment_chance, flinch_chance, stat_chance, effect_chance, COALESCE(mv_e.short_effect, mv_e_en.short_effect) short_effect
                 FROM pokemon_moves pk_mv
                 JOIN moves mv ON mv.id = pk_mv.move_id
                 JOIN move_meta mv_m ON mv_m.move_id = mv.id
-                LEFT JOIN move_names mv_n ON mv_n.move_id = mv.id
-                LEFT JOIN move_effect_prose mv_e ON mv_e.move_effect_id = mv.effect_id
+                LEFT JOIN move_names mv_n ON mv_n.move_id = mv.id AND mv_n.local_language_id = {_languageId}
+                LEFT JOIN move_names mv_n_en ON mv_n_en.move_id = mv.id AND mv_n_en.local_language_id = 9
+                LEFT JOIN move_effect_prose mv_e ON mv_e.move_effect_id = mv.effect_id AND mv_e.local_language_id = {_languageId}
+                LEFT JOIN move_effect_prose mv_e_en ON mv_e_en.move_effect_id = mv.effect_id AND mv_e_en.local_language_id = 9
                 WHERE pokemon_id = {id}
                 AND version_group_id = {_versionGroupId}
-                AND mv_n.local_language_id = {_languageId}
-                AND mv_e.local_language_id = {_languageId}
-                AND level BETWEEN 1 AND {level}";
+                AND level <= {level}
+                ORDER BY RANDOM()
+                LIMIT 0,4";
             int tmp;
-            Move[] moves = _db.ReadDataTable(sqlMoves).AsEnumerable().OrderBy(dr => Guid.NewGuid()).Take(4)
+            Move[] moves = _db.ReadDataTable(sqlMoves).AsEnumerable()
                 .Select(dr => new Move
                 {
                     Id = dr.GetValue<int>("move_id"),
@@ -86,7 +88,7 @@ namespace PokeBattle
         }
 
         static private int TypeEfficacy(int m1, int m2) => 
-            _db.ReadValue<int>($"SELECT damage_factor FROM type_efficacy WHERE damage_type_id = {m1} AND target_type_id = " + m2);
+            _db.ReadValue<int>($"SELECT damage_factor FROM type_efficacy WHERE damage_type_id = {m1} AND target_type_id = {m2}");
 
         static public double TypeEfficacy(int moveType, Tuple<int, int?> pokemonTypes)
         {
