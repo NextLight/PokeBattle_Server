@@ -8,7 +8,7 @@ namespace PokeBattle
     static class PokeBox
     {
         static Db _db;
-        static int _versionGroupId = 16, _languageId = 9;
+        static int _versionGroupId = 16, _languageId = 9, _generation = 5;
         static public int NumberOfPokemon { get; }
 
         static PokeBox()
@@ -23,7 +23,7 @@ namespace PokeBattle
             var types = _db.ReadColumn<int>("SELECT type_id FROM pokemon_types WHERE pokemon_id = " + id).ToArray();
             var baseStats = _db.ReadColumn<int>("SELECT base_stat FROM pokemon_stats WHERE pokemon_id = " + id + " ORDER BY stat_id").ToArray();
             string sqlMoves =
-                @"SELECT pk_mv.move_id, name, power, accuracy, pp, type_id, damage_class_id, target_id,
+                $@"SELECT pk_mv.move_id, name, power, accuracy, pp, type_id, damage_class_id, target_id,
                     meta_category_id, meta_ailment_id, min_hits, max_hits, min_turns, max_turns, (drain + healing) hp_changes,
                     crit_rate, ailment_chance, flinch_chance, stat_chance, effect_chance, short_effect
                 FROM pokemon_moves pk_mv
@@ -31,11 +31,11 @@ namespace PokeBattle
                 JOIN move_meta mv_m ON mv_m.move_id = mv.id
                 LEFT JOIN move_names mv_n ON mv_n.move_id = mv.id
                 LEFT JOIN move_effect_prose mv_e ON mv_e.move_effect_id = mv.effect_id
-                WHERE pokemon_id = " + id +
-                " AND version_group_id = " + _versionGroupId +
-                " AND mv_n.local_language_id = " + _languageId +
-                " AND mv_e.local_language_id = " + _languageId +
-                " AND level BETWEEN 1 AND " + level;
+                WHERE pokemon_id = {id}
+                AND version_group_id = {_versionGroupId}
+                AND mv_n.local_language_id = {_languageId}
+                AND mv_e.local_language_id = {_languageId}
+                AND level BETWEEN 1 AND {level}";
             int tmp;
             Move[] moves = _db.ReadDataTable(sqlMoves).AsEnumerable().OrderBy(dr => Guid.NewGuid()).Take(4)
                 .Select(dr => new Move
@@ -75,19 +75,18 @@ namespace PokeBattle
         static public Pokemon GetRandomPokemonByLevel(int level)
         {
             // Try to always select the best pokemon id in evolution chain
-            // TODO: use MAX(minimum_level) from pokemon_evolution instead of MAX(evolves_from_species_id)
-            int evChain = _db.ReadValue<int>("SELECT evolution_chain_id FROM pokemon_species ORDER BY RANDOM() limit 0, 1");
-            int? maxFromSpecieId = _db.ReadValue<int?>("SELECT MAX(evolves_from_species_id) FROM pokemon_species WHERE evolution_chain_id = " + evChain);
-            int id;
-            if (maxFromSpecieId != null)
-                id = _db.ReadValue<int>("SELECT id FROM pokemon_species WHERE evolves_from_species_id = " + maxFromSpecieId + " ORDER BY RANDOM() limit 0, 1");
-            else // chain doesn't have evolutions
-                id = _db.ReadValue<int>("SELECT id FROM pokemon_species WHERE evolution_chain_id = " + evChain);
+            int evChain = _db.ReadValue<int>($@"SELECT evolution_chain_id FROM pokemon_species WHERE generation_id <= {_generation}
+                GROUP BY evolution_chain_id ORDER BY RANDOM() LIMIT 0, 1");
+            var table = _db.ReadDataTable($@"SELECT ps.id, coalesce(minimum_level, 0) AS level FROM pokemon_species ps LEFT JOIN pokemon_evolution ON ps.id = evolved_species_id
+                WHERE evolution_chain_id = {evChain} AND level <= {level} ORDER BY level");
+            int bestLevel = table.AsEnumerable().Last().GetValue<int>("level");
+            int id = table.AsEnumerable().Where(r => r.GetValue<int>("level") == bestLevel)
+                .OrderBy(r => Guid.NewGuid()).First().GetValue<int>("id"); // random pick
             return GetPokemonByIdAndLevel(id, level);
         }
 
         static private int TypeEfficacy(int m1, int m2) => 
-            _db.ReadValue<int>("SELECT damage_factor FROM type_efficacy WHERE damage_type_id = " + m1 + " AND target_type_id = " + m2);
+            _db.ReadValue<int>($"SELECT damage_factor FROM type_efficacy WHERE damage_type_id = {m1} AND target_type_id = " + m2);
 
         static public double TypeEfficacy(int moveType, Tuple<int, int?> pokemonTypes)
         {
