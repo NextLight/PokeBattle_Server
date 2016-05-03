@@ -43,7 +43,7 @@ namespace PokeBattle
 
         public void Connect()
         {
-            var server = new TcpListener(IPAddress.Loopback, 9073);
+            var server = new TcpListener(IPAddress.Any, 9073);
             server.Start();
             _client = server.AcceptTcpClient();
             _stream = _client.GetStream();
@@ -79,7 +79,7 @@ namespace PokeBattle
             WriteMessageType(MessageType.BeginTurn);
 
         public void SendText(string text) =>
-            WriteLine(Convert.ToBase64String(Encoding.ASCII.GetBytes(text)), MessageType.Text);
+            WriteLine(Convert.ToBase64String(Encoding.UTF8.GetBytes(text)), MessageType.Text);
 
         public void SendPokeTeam() =>
             WriteLine(_serializer.Serialize(PokeTeam), MessageType.PokeTeam);
