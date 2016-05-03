@@ -113,7 +113,7 @@ namespace PokeBattle
 
         public ReadReturn ReadSwitch()
         {
-            var r = Read();
+            var r = ReadGeneric();
             if (r.Type == ReadType.Move)
                 throw new Exception();
             return r;
