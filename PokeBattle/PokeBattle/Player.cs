@@ -1,8 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 namespace PokeBattle
@@ -24,6 +27,13 @@ namespace PokeBattle
 
         public Pokemon[] PokeTeam { get; }
 
+        public event EventHandler ClientDisconnected;
+        public event EventHandler ClientConnected;
+
+        public bool IsConnected => _client?.Connected ?? false;
+
+        public bool IsInitialized { get; private set; }
+
         public bool Lost => PokeTeam.All(p => p.Fainted);
 
         int _selectedPokemonIdx = 0;
@@ -41,19 +51,22 @@ namespace PokeBattle
 
         public Pokemon SelectedPokemon => PokeTeam[_selectedPokemonIdx];
 
-        public void Connect()
+        public async Task Connect()
         {
             var server = new TcpListener(IPAddress.Any, 9073);
             server.Start();
-            _client = server.AcceptTcpClient();
+            _client = await server.AcceptTcpClientAsync();
             _stream = _client.GetStream();
             server.Stop();
+            ClientConnected?.Invoke(this, null);
         }
 
         public void Close()
         {
-            _client.Close();
-            _stream.Dispose();
+            IsInitialized = false;
+            _client?.Close();
+            _stream?.Dispose();
+            _stream = null;
         }
 
         private void WriteBytes(byte[] array)
@@ -64,15 +77,21 @@ namespace PokeBattle
         private void WriteLine(string message, MessageType type)
         {
             WriteMessageType(type);
-            WriteBytes(Encoding.ASCII.GetBytes(message + '\n'));
+            WriteBytes(Encoding.UTF8.GetBytes(message + '\n'));
         }
 
         private void WriteMessageType(MessageType type)
         {
-            _stream?.WriteByte((byte)type);
+                _stream?.WriteByte((byte)type);
 #if DEBUG
             Console.WriteLine(type.ToString());
 #endif
+        }
+
+        public void SendActivePokemon()
+        {
+            WriteLine("" + (char)SelectedPokemonIdx, MessageType.ActivePokemon);
+            IsInitialized = true;
         }
 
         public void SendBeginTurn() =>
@@ -99,28 +118,45 @@ namespace PokeBattle
         public void SendOpponentFainted() =>
             WriteMessageType(MessageType.OpponentFainted);
 
-        // Each turn the player can either use a move (0), change (1) or don't change (2 - only when opponent's fainted) the active pokemon
-        private ReadReturn ReadGeneric() => 
-            new ReadReturn { Type = (ReadType)_stream.ReadByte(), Value = (byte)_stream.ReadByte() };
+        CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public ReadReturn Read()
+        // Each turn the player can either use a move (0), change (1) or don't change (2 - only when opponent's fainted) the active pokemon
+        private async Task<ReadReturn> ReadGenericAsync()
         {
-            var r = ReadGeneric();
+            try
+            {
+                var buffer = new byte[2];
+                await _stream.ReadAsync(buffer, 0, 2, _cts.Token);
+                return new ReadReturn { Type = (ReadType)buffer[0], Value = buffer[1] };
+            }
+            catch (IOException)
+            {
+                Close();
+                Task.Run(() => ClientDisconnected?.Invoke(this, null));
+                throw new IOException();
+            }
+        }
+
+        public async Task<ReadReturn> ReadAsync()
+        {
+            var r = await ReadGenericAsync();
             if (r.Type == ReadType.NoSwitch)
                 throw new Exception();
             return r;
         }
 
-        public ReadReturn ReadSwitch()
+        public async Task<ReadReturn> ReadSwitchAsync()
         {
-            var r = ReadGeneric();
+            var r = await ReadGenericAsync();
             if (r.Type == ReadType.Move)
                 throw new Exception();
             return r;
         }
+
+        public void CancelRead() => _cts.Cancel();
     }
 
-    enum MessageType : byte { Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted, OpponentFainted }
+    enum MessageType : byte { ActivePokemon, Text, ChangeOpponent, PokeTeam, InBattleUser, InBattleOpponent, BeginTurn, UserFainted, OpponentFainted }
 
     enum ReadType : byte { Move, Switch, NoSwitch }
 
