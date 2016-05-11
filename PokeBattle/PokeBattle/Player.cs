@@ -105,16 +105,9 @@ namespace PokeBattle
         // Each turn the player can either use a move (0), change (1) or don't change (2 - only when opponent's fainted) the active pokemon
         private async Task<ReadReturn> ReadGenericAsync()
         {
-            try
-            {
-                var buffer = new byte[2];
-                await _stream.ReadAsync(buffer, 0, 2);
-                return new ReadReturn { Type = (ReadType)buffer[0], Value = buffer[1] };
-            }
-            catch
-            {
-                throw new System.IO.IOException();
-            }
+            var buffer = new byte[2];
+            await _stream.ReadAsync(buffer, 0, 2);
+            return new ReadReturn { Type = (ReadType)buffer[0], Value = buffer[1] };
         }
 
         public async Task<ReadReturn> ReadAsync()

@@ -23,14 +23,18 @@ namespace PokeBattle
 
     class Match
     {
+        static int _id = 0;
         PlayerCollection _players;
         Battle _battle;
         public Match()
         {
+            Id = _id++;
             _players = new PlayerCollection(new Player(), new Player());
             _battle = new Battle(_players[0], _players[1]);
             Start();
         }
+
+        public int Id { get; }
 
         public bool Ended { get; private set; }
 
@@ -42,7 +46,7 @@ namespace PokeBattle
             {
                 try
                 {
-                    Console.WriteLine("Waiting for 2 players.");
+                    Debug("Waiting for 2 players.");
                     _players.Connect();
                     _players.SendPokeTeam();
                     _players.SendOpponent(_players[1]);
@@ -82,15 +86,18 @@ namespace PokeBattle
                         }
                     }
 
-                    Console.WriteLine("Game over. Player " + (_players[0].Lost ? 2 : 1) + " won.");
+                    Debug("Game over. Player " + (_players[0].Lost ? 2 : 1) + " won.");
                 }
                 finally
                 {
-                    Console.WriteLine("Someone disconnected.");
+                    Debug("Someone disconnected.");
                     _players.Close();
                     Ended = true;
                 }
             });
         }
+
+        private void Debug(string s) =>
+            Console.WriteLine($"{Id}: {s}");
     }
 }

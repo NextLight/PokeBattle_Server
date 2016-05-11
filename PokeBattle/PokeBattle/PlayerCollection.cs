@@ -57,8 +57,6 @@ namespace PokeBattle
                 .Select(async kv => new KeyValuePair<Player, ReadReturn>(kv.Key, await kv.Value)))
                 ).Where(kv => kv.Value.Type == ReadType.Switch).Select(kv => new KeyValuePair<Player, byte>(kv.Key, kv.Value.Value));
 
-
-
         private void Execute(object[] args = null, Player f = null, [CallerMemberName]string name = "")
         {
             MethodInfo method = typeof(Player).GetMethod(name);
