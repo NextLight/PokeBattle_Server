@@ -62,7 +62,7 @@ namespace PokeBattle
                     Target = (tmp = dr.GetValue<int>("meta_category_id")) == 6 ? StatsTarget.Opponent : tmp == 7 ? StatsTarget.User : tmp == 2 ?
                         (new [] { 6, 8, 9, 10, 11 }.Contains(tmp = dr.GetValue<int>("target_id")) ? StatsTarget.Opponent :
                         new [] { 4, 5, 7, 13 }.Contains(tmp) ? StatsTarget.User : StatsTarget.Both) : StatsTarget.None,
-                    StatsChanges = new StatsChanges(dr.GetValue<int>("stat_chance"),
+                    StatsChanges = new StatsChanges((tmp = dr.GetValue<int>("stat_chance")) == 0 ? 100 : tmp,
                         _db.ReadDataTable("SELECT stat_id, change FROM move_meta_stat_changes WHERE move_id = " + dr.GetValue<int>("move_id"))
                             .AsEnumerable().Select(r => new StatChange(r.GetValue<int>("stat_id"), r.GetValue<int>("change"))).ToArray()),
                     EffectText = Regex.Replace(
