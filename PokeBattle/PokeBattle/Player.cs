@@ -67,7 +67,7 @@ namespace PokeBattle
         private void WriteLine(string message, MessageType type)
         {
             WriteMessageType(type);
-            WriteBytes(Encoding.ASCII.GetBytes(message + '\n'));
+            WriteBytes(Encoding.UTF8.GetBytes(message + '\n'));
         }
 
         private void WriteMessageType(MessageType type)
