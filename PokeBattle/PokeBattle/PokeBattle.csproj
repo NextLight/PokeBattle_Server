@@ -54,6 +54,7 @@
     <Compile Include="Battle.cs" />
     <Compile Include="Db.cs" />
     <Compile Include="Move.cs" />
+    <Compile Include="PlayerCollection.cs" />
     <Compile Include="PokeBox.cs" />
     <Compile Include="Pokemon.cs" />
     <Compile Include="Program.cs" />

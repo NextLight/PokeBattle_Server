@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 namespace PokeBattle
@@ -25,6 +26,8 @@ namespace PokeBattle
         public Pokemon[] PokeTeam { get; }
 
         public bool Lost => PokeTeam.All(p => p.Fainted);
+
+        public bool IsConnected => _client?.Connected ?? false;
 
         int _selectedPokemonIdx = 0;
         public int SelectedPokemonIdx
@@ -100,20 +103,31 @@ namespace PokeBattle
             WriteMessageType(MessageType.OpponentFainted);
 
         // Each turn the player can either use a move (0), change (1) or don't change (2 - only when opponent's fainted) the active pokemon
-        private ReadReturn ReadGeneric() => 
-            new ReadReturn { Type = (ReadType)_stream.ReadByte(), Value = (byte)_stream.ReadByte() };
-
-        public ReadReturn Read()
+        private async Task<ReadReturn> ReadGenericAsync()
         {
-            var r = ReadGeneric();
+            try
+            {
+                var buffer = new byte[2];
+                await _stream.ReadAsync(buffer, 0, 2);
+                return new ReadReturn { Type = (ReadType)buffer[0], Value = buffer[1] };
+            }
+            catch
+            {
+                throw new System.IO.IOException();
+            }
+        }
+
+        public async Task<ReadReturn> ReadAsync()
+        {
+            var r = await ReadGenericAsync();
             if (r.Type == ReadType.NoSwitch)
                 throw new Exception();
             return r;
         }
 
-        public ReadReturn ReadSwitch()
+        public async Task<ReadReturn> ReadSwitchAsync()
         {
-            var r = ReadGeneric();
+            var r = await ReadGenericAsync();
             if (r.Type == ReadType.Move)
                 throw new Exception();
             return r;
